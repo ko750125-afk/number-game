@@ -23,9 +23,9 @@ function ZenSudokuContent() {
   const { playSound } = useAudio();
   
   // Game states
-  const [solvedBoard, setSolvedBoard] = useState<number[][]>([]);
-  const [board, setBoard] = useState<number[][]>([]);
-  const [initialMask, setInitialMask] = useState<boolean[][]>([]); // true if cell was initially given
+  const [solvedBoard, setSolvedBoard] = useState<number[][]>(() => Array(9).fill(null).map(() => Array(9).fill(0)));
+  const [board, setBoard] = useState<number[][]>(() => Array(9).fill(null).map(() => Array(9).fill(0)));
+  const [initialMask, setInitialMask] = useState<boolean[][]>(() => Array(9).fill(null).map(() => Array(9).fill(false)));
   const [selectedCell, setSelectedCell] = useState<{ r: number; c: number } | null>(null);
   
   const [difficulty, setDifficulty] = useState<Difficulty>('easy');
@@ -90,7 +90,7 @@ function ZenSudokuContent() {
     const { r, c } = selectedCell;
 
     // Check if cell is locked (initial number)
-    if (initialMask[r][c]) return;
+    if (initialMask[r]?.[c]) return;
 
     saveToHistory(board, notes, mistakes);
 
@@ -110,7 +110,7 @@ function ZenSudokuContent() {
       playSound('click');
     } else {
       // Direct placement mode
-      const correctVal = solvedBoard[r][c];
+      const correctVal = solvedBoard[r]?.[c] ?? 0;
       const newBoard = board.map(row => [...row]);
       newBoard[r][c] = num;
       setBoard(newBoard);
@@ -161,7 +161,7 @@ function ZenSudokuContent() {
     if (!selectedCell || isGameOver || isGameWon) return;
     const { r, c } = selectedCell;
 
-    if (initialMask[r][c]) return;
+    if (initialMask[r]?.[c]) return;
 
     saveToHistory(board, notes, mistakes);
     playSound('click');
@@ -205,8 +205,8 @@ function ZenSudokuContent() {
     const sharesArea = inSameRow || inSameCol || inSameBox;
 
     // Check if cell shares same value as selected cell
-    const selectedVal = board[selR][selC];
-    const sharesValue = selectedVal !== 0 && board[r][c] === selectedVal;
+    const selectedVal = board[selR]?.[selC] ?? 0;
+    const sharesValue = selectedVal !== 0 && board[r]?.[c] === selectedVal;
 
     if (isSelected) {
       return 'bg-amber-100/90 text-amber-900 border-amber-400 ring-2 ring-amber-300';
@@ -275,9 +275,9 @@ function ZenSudokuContent() {
                   const r = boxRow * 3 + cellR;
                   return [0, 1, 2].map((cellC) => {
                     const c = boxCol * 3 + cellC;
-                    const val = board[r][c];
-                    const isGiven = initialMask[r][c];
-                    const isCorrect = val === solvedBoard[r][c];
+                    const val = board[r]?.[c] ?? 0;
+                    const isGiven = initialMask[r]?.[c] ?? false;
+                    const isCorrect = val === solvedBoard[r]?.[c];
                     
                     const cellColorClass = getCellHighlightClass(r, c);
                     const cellNotes = notes[`${r}-${c}`] || [];
